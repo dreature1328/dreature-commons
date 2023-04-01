@@ -4,14 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
 import javax.net.ssl.*;
 import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -21,7 +19,9 @@ import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class HTTPUtils {
@@ -77,95 +77,99 @@ public class HTTPUtils {
     }
 
     // 将请求头键值对添加到 HTTP 请求中
-    public static void addHeadersToRequest(HttpURLConnection httpConn, Map headers){
-        // headers 是 Map<Object, Object> 或 Map<Object, Object[]> 类型的请求头，键与值分别是请求头名与请求头值，有重复同名请求头时将多个值放进数组
+    public static void addHeadersToRequest(HttpURLConnection httpConn, Map<String, ?> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, ?> entry : headers.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
 
-        Set headersSet = headers.entrySet();
-        Iterator<Map.Entry> it = headersSet.iterator();
-
-        if (it.hasNext()) { // 请求头键值对不为空
-            // 若值为数组（请求头含有同名重复的）
-            if (it.next().getValue().getClass().isArray()) {
-                for(Map.Entry<Object, Object[]> entry : (Set<Map.Entry<Object, Object[]>>)headersSet){
-                    for (Object value : entry.getValue()) {
-                        httpConn.setRequestProperty(entry.getKey().toString(), value.toString());
+                if (value.getClass().isArray()) {
+                    // 如果是数组类型，则遍历数组并添加请求头
+                    for (Object v : (Object[]) value) {
+                        httpConn.setRequestProperty(key, v.toString());
                     }
-                }
-            }
-            // 若值不为数组（请求头不含有同名重复的）
-            else {
-                for(Map.Entry<Object, Object> entry:(Set<Map.Entry<Object, Object>>)headersSet){
-                    httpConn.setRequestProperty(entry.getKey().toString(), entry.getValue().toString());
+                } else {
+                    // 如果不是数组类型，则直接添加请求头
+                    httpConn.setRequestProperty(key, value.toString());
                 }
             }
         }
-        return ;
     }
+
 
     // 将请求参数拼接进 URL
-    public static String concatParamsToURL(String staticURL, String paramsStr) throws Exception {
+    public static String concatParamsToURL(String staticURL, String paramsStr){
         return staticURL + paramsStr;
     }
-    public static String concatParamsToURL(String staticURL, Map params) throws Exception {
+
+    public static String concatParamsToURL(String staticURL, Map<String, ?> params) throws Exception {
         // staticURL 是字符串形式的静态 URL
-        // params 是 Map<Object, Object> 或 Map<Object, Object[]> 类型的请求参数，键与值分别是参数名与参数值，URL 有重复同名参数时将多个值放进数组
+        // params 键与值分别是参数名与参数值，URL 有重复同名参数时将多个值放进数组
 
-        Set paramsSet = params.entrySet();
-        Iterator<Map.Entry> it = paramsSet.iterator();
-        String strURL = staticURL;
+        // 判断参数是否为空
+        if (params.isEmpty()) {
+            return staticURL;
+        }
 
-        if (it.hasNext()) { // 参数键值对不为空
-            int paramIndex = 0;
-            // 若值为数组（URL 含有同名重复参数）
-            if (it.next().getValue().getClass().isArray()) {
-                for (Map.Entry<Object, Object[]> entry : (Set<Map.Entry<Object, Object[]>>)paramsSet) {
-                    for (Object value : entry.getValue()) {
-                        if (paramIndex == 0 && strURL.indexOf("?") == -1) strURL += "?";
-                        else strURL += "&";
-                        // 为了避免中文乱码等问题，将参数值进行转码再拼接进 URL
-                        strURL += URLEncoder.encode(entry.getKey().toString(), "utf-8") + "=" + URLEncoder.encode(value.toString(), "utf-8");
-                        paramIndex++;
-                    }
+        StringBuilder sb = new StringBuilder(staticURL);
+
+        // 判断 URL 中是否已经包含参数
+        boolean hasParams = staticURL.indexOf("?") != -1;
+
+        // 遍历参数
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            String key = entry.getKey(); // 参数名
+            Object value = entry.getValue(); // 参数值
+
+            // 判断参数值是否为数组
+            if (value.getClass().isArray()) {
+                // 如果是数组，遍历数组并添加参数
+                for (Object v : (Object[]) value) {
+                    sb.append(hasParams ? "&" : "?")
+                            .append(URLEncoder.encode(key, "utf-8"))
+                            .append("=")
+                            .append(URLEncoder.encode(v.toString(), "utf-8"));
+                    hasParams = true;
                 }
-            }
-            // 若值不为数组（URL 不含有同名重复参数）
-            else {
-                for (Map.Entry<Object, Object> entry : (Set<Map.Entry<Object, Object>>)paramsSet) {
-                    if (paramIndex == 0 && strURL.indexOf("?") == -1) strURL += "?";
-                    else strURL += "&";
-                    // 为了避免中文乱码等问题，将参数值进行转码再拼接进 URL
-                    strURL += URLEncoder.encode(entry.getKey().toString(), "utf-8") + "=" + URLEncoder.encode(entry.getValue().toString(), "utf-8");
-                    paramIndex++;
-                }
+            } else {
+                // 如果不是数组，直接添加参数
+                sb.append(hasParams ? "&" : "?")
+                        .append(URLEncoder.encode(key, "utf-8"))
+                        .append("=")
+                        .append(URLEncoder.encode(value.toString(), "utf-8"));
+                hasParams = true;
             }
         }
-        return strURL;
+
+        return sb.toString();
     }
 
     // 发起 HTTP 请求并获取响应内容
-    // 重载 getResponseContent()，相当于参数有默认值
-    public static String getResponseContent(String strURL) throws Exception {
-        return getResponseContent(strURL, "GET", null, null);
+    // 重载 requestHTTPContent()，相当于参数有默认值
+    public static String requestHTTPContent(String strURL) throws Exception {
+        return requestHTTPContent(strURL, "GET", null, null);
     }
-    public static String getResponseContent(String strURL, String method) throws Exception {
-        return getResponseContent(strURL, method, null, null);
+    public static String requestHTTPContent(String strURL, String method) throws Exception {
+        return requestHTTPContent(strURL, method, null, null);
     }
-    public static String getResponseContent(String strURL, String method, Map headers) throws Exception {
-        return getResponseContent(strURL, method, headers, null);
+    public static String requestHTTPContent(String strURL, String method, Map<String, ?> headers) throws Exception {
+        return requestHTTPContent(strURL, method, headers, null);
     }
-    public static String getResponseContent(String strURL, String method, Map headers, Map params) throws Exception {
+    public static String requestHTTPContent(String strURL, String method, Map<String, ?> headers, Map<String, ?> params) throws Exception {
         // strURL 是 String 类型的 URL
         // method 是 String 类型的请求方法，为 "GET" 或 "POST"
-        // headers 是 Map<Object, Object> 或 Map<Object, Object[]> 类型的请求头，键与值分别是请求头名与请求头值，有重复同名请求头时将多个值放进数组
-        // params 是 Map<Object, Object> 或 Map<Object, Object[]> 类型的请求参数，键与值分别是参数名与参数值，URL 有重复同名参数时将多个值放进数组
+        // headers 键与值分别是请求头名与请求头值，有重复同名请求头时将多个值放进数组
+        // params 键与值分别是参数名与参数值，URL 有重复同名参数时将多个值放进数组
 
         // 忽略验证 https 中 SSL 证书
         disableSslVerification();
 
         // GET 方法下，query 参数拼接在 URL 字符串末尾
-        if(method.equals("GET") && params!=null && !params.isEmpty()){
+        if(method.equals("GET") && params != null) {
             strURL = concatParamsToURL(strURL, params);
         }
+
+        System.out.println(strURL);
 
         URL url = new URL(strURL);
         HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
@@ -184,7 +188,7 @@ public class HTTPUtils {
         httpConn.setDoInput(true);
 
         // 此处默认 POST 方法发送的内容就是 JSON 形式的 body 参数，可以自行更改
-        if(method.equals("POST") && params!=null && !params.isEmpty()){
+        if(method.equals("POST") && params!=null) {
             // 发送请求
             OutputStream out = new DataOutputStream(httpConn.getOutputStream());
             // getBytes() 作用为根据参数给定的编码方式，将一个字符串转化为一个字节数组
@@ -206,10 +210,10 @@ public class HTTPUtils {
     }
 
     // 异步 HTTP 请求
-    public static CompletableFuture<String> asyncHttpRequest(String strURL, String method, Map<String, String> headers, Map<String, String> params) {
+    public static CompletableFuture<String> asyncHTTPRequest(String strURL, String method, Map<String, ?> headers, Map<String, ?> params) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return getResponseContent(strURL, method, headers, params);
+                return requestHTTPContent(strURL, method, headers, params);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;

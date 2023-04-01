@@ -13,13 +13,13 @@ import java.util.List;
 public class TimeUtils {
     // -----时间格式转化-----
     // Date 转化成格式化日期字符串
-    public static String dateToFormatStr (Date date){
+    public static String dateToFormatStr (Date date) {
         SimpleDateFormat secondFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String dateStr = secondFormat.format(date);
         return dateStr;
     }
     // Date 转化成格式化日期字符串
-    public static String dateToFormatStr (Date date, String formatStr){
+    public static String dateToFormatStr (Date date, String formatStr) {
         SimpleDateFormat format = new SimpleDateFormat(formatStr);
         String dateStr = format.format(date);
         return dateStr;
@@ -37,22 +37,22 @@ public class TimeUtils {
         return date;
     }
     // 时间戳转化成格式化日期字符串
-    public static String timeStampToFormatStr(String timeStamp){
+    public static String timeStampToFormatStr(String timeStamp) {
         SimpleDateFormat secondFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return secondFormat.format(Long.parseLong(timeStamp));
     }
     // 时间戳转化成格式化日期字符串
-    public static String timeStampToFormatStr(String timeStamp, String formatStr){
+    public static String timeStampToFormatStr(String timeStamp, String formatStr) {
         SimpleDateFormat secondFormat = new SimpleDateFormat(formatStr);
         return secondFormat.format(Long.parseLong(timeStamp));
     }
     // 时间戳转化成格式化日期字符串
-    public static String timeStampToFormatStr(long timeStamp){
+    public static String timeStampToFormatStr(long timeStamp) {
         SimpleDateFormat secondFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return secondFormat.format(timeStamp);
     }
     // 时间戳转化成格式化日期字符串
-    public static String timeStampToFormatStr(long timeStamp, String formatStr){
+    public static String timeStampToFormatStr(long timeStamp, String formatStr) {
         SimpleDateFormat secondFormat = new SimpleDateFormat(formatStr);
         return secondFormat.format(timeStamp);
     }
@@ -97,13 +97,13 @@ public class TimeUtils {
         return calendar.get(Calendar.YEAR);
     }
     // 获取指定年月的当月第一天（格式为 yyyy-MM-dd 的字符串）
-    public static String getFirstDayOfMonth(Integer year, Integer month){
+    public static String getFirstDayOfMonth(Integer year, Integer month) {
         LocalDate localDate =LocalDate.of(year, month, 1);
         return localDate.with(TemporalAdjusters.firstDayOfMonth()).toString();
 
     }
     // 获取指定年月的当月最后一天（格式为 yyyy-MM-dd 的字符串）
-    public static String getLastDayOfMonth(Integer year, Integer month){
+    public static String getLastDayOfMonth(Integer year, Integer month) {
         LocalDate localDate =LocalDate.of(year, month, 1);
         return localDate.with(TemporalAdjusters.lastDayOfMonth()).toString();
 

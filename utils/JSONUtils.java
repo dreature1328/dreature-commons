@@ -15,49 +15,49 @@ public class JSONUtils {
     // JSON 数组对应的字符串是用方括号 [] 包裹起来的，如 [{"x":"1","y":"2"},{"x":"3","y":"4"}]
 
     // JSON 字符串转 JSON 对象
-    public static JSONObject strToJSONObj(String jsonStr){
+    public static JSONObject strToJSONObj(String jsonStr) {
         return JSON.parseObject(jsonStr);
     }
     // JSON 字符串转 JSON 数组
-    public static JSONArray strToJSONArr(String jsonStr){
+    public static JSONArray strToJSONArr(String jsonStr) {
         return JSON.parseArray(jsonStr);
     }
     // JSON 字符串转 Java 对象
-    public static <T> T strToObj(String jsonStr, Class<T> clazz){
+    public static <T> T strToObj(String jsonStr, Class<T> clazz) {
         return JSON.parseObject(jsonStr, clazz);
     }
     // JSON 字符串转列表
-    public static <T> List<T> strToList(String jsonStr, Class<T> clazz){
+    public static <T> List<T> strToList(String jsonStr, Class<T> clazz) {
         return JSON.parseArray(jsonStr, clazz);
     }
     // JSON 对象转 JSON 字符串
-    public static String JSONObjToStr(JSONObject obj){
+    public static String JSONObjToStr(JSONObject obj) {
         return JSON.toJSONString(obj);
     }
     // JSON 对象转 Java 对象
-    public static <T> T JSONObjToObj(JSONObject jsonObj, Class<T> clazz){
+    public static <T> T JSONObjToObj(JSONObject jsonObj, Class<T> clazz) {
         if(jsonObj == null) return null;
         else return jsonObj.toJavaObject(clazz);
     }
     // JSON 数组转 JSON 字符串
-    public static String JSONArrToStr(JSONArray jsonArr){
+    public static String JSONArrToStr(JSONArray jsonArr) {
         return JSON.toJSONString(jsonArr);
     }
     // JSON 数组转列表
-    public static <T> List<T> JSONArrToList(JSONArray jsonArr, Class<T> clazz){
+    public static <T> List<T> JSONArrToList(JSONArray jsonArr, Class<T> clazz) {
         if(jsonArr == null) return null;
         else return jsonArr.toJavaList(clazz);
     }
     // Java 对象转 JSON 字符串
-    public static String objToStr(Object obj){
+    public static String objToStr(Object obj) {
         return JSON.toJSONString(obj);
     }
     // Java 对象转 JSON 对象
-    public static JSONObject objToJSONObj(Object obj){
+    public static JSONObject objToJSONObj(Object obj) {
         return (JSONObject) JSON.toJSON(obj);
     }
     // 列表转 JSON 数组
-    public static JSONArray listToJSONArr(List list){
+    public static JSONArray listToJSONArr(List list) {
         return JSONArray.parseArray(JSON.toJSONString(list));
     }
     // 从 JSON 文件读取出 JSON 对象
@@ -70,13 +70,13 @@ public class JSONUtils {
             Reader reader = new InputStreamReader(new FileInputStream(jsonFile),"utf-8");
             int ch = 0;
             StringBuffer stringBuffer = new StringBuffer();
-            while ((ch = reader.read()) != -1){
+            while ((ch = reader.read()) != -1) {
                 stringBuffer.append((char) ch);
             }
             fileReader.close();
             reader.close();
             jsonStr = stringBuffer.toString();
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             return null;
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,7 +115,7 @@ public class JSONUtils {
         Random random = new Random();
         for (String key : keys) {
             StringBuffer buffer = new StringBuffer();
-            for(int i = 0; i < length; i++){
+            for(int i = 0; i < length; i++) {
                 int number = random.nextInt(baseStr.length());
                 buffer.append(baseStr.charAt(number));
             }
